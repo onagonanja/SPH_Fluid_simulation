@@ -5,7 +5,7 @@ using UnityEngine;
 public class Particle : MonoBehaviour {
     public Vector3 v;
     public Vector3 a;
-    public float density = 0f;
+    public float density = 1f;
     public float mass = 0.04f;
     public float pressure = 0f;
     public Vector3 pressureGradient = Vector3.zero;

@@ -1,0 +1,172 @@
+#pragma kernel ComputeDensity
+#pragma kernel ComputePressure
+#pragma kernel ComputeAcceleration
+#pragma kernel ComputeTimeIntegration
+
+#define THREAD_SIZE 1024
+
+RWTexture2D<float4> Result;
+
+struct Particle {
+    float3 position;
+    float3 velocity;
+    float3 acceleration;
+    float density;
+    float pressure;
+};
+
+RWStructuredBuffer<Particle> R_particlesBuffer;
+RWStructuredBuffer<Particle> W_particlesBuffer;
+
+struct DebugBuffer {
+    float3 viscosity;
+    float3 pressureGradient;
+};
+RWStructuredBuffer<DebugBuffer> debugBuffer;
+
+cbuffer ParticleData {
+    int NUM_PARTICLES;
+    float3 GRAVITY;
+    float PARTICLE_MASS;
+    float TIMESTEP;
+    float SMOOTH_LEN;
+    float REST_DENSITY;
+    float PRESS_COEFF;
+    float VISCO_COEFF;
+    float WALL_STIFF;
+    float BOX_SIZE;
+};
+
+inline float Kernel(float r) {
+    float h = SMOOTH_LEN;
+    float q = r / h;
+    if (q < 1.0f) {
+        return (315.0f / (64.0f * 3.14159f * pow(h, 9))) * pow((h * h - r * r), 3);
+    } else {
+        return 0.0f;
+    }
+}
+
+inline float3 KernelGradient(float r, float3 dir) {
+    float h = SMOOTH_LEN;
+    float q = r / h;
+    if (q < 1.0f) {
+        return (- 945.0f / (32.0f * 3.14159f * pow(h, 9))) * pow((h * h - r * r), 2) * dir;
+    } else {
+        return 0.0f;
+    }
+}
+
+inline float KernelLaplacian(float r) {
+    float h = SMOOTH_LEN;
+    float q = r * r / (h * h);
+    if (q < 1.0f) {
+        return 945.0f / (32.0f * 3.14159f * pow(h, 5)) * (1 - q) * (3 * q - 1);
+    } else {
+        return 0.0f;
+    }
+}
+
+[numthreads(THREAD_SIZE,1,1)]
+void ComputeDensity(int3 id : SV_DispatchThreadID) {
+    int index = id.x;
+    Particle particle = R_particlesBuffer[index];
+
+    float density = 0.0f;
+    for (int i = 0; i < NUM_PARTICLES; i ++) {
+        Particle other = R_particlesBuffer[i];
+        float3 r = particle.position - other.position;
+        float r2 = dot(r, r);
+        if (r2 < SMOOTH_LEN * SMOOTH_LEN) {
+            float q = sqrt(r2) / SMOOTH_LEN;
+            density += PARTICLE_MASS * Kernel(length(r));
+        }
+    }
+
+    R_particlesBuffer[index].density = density;
+    W_particlesBuffer[index].density = density;
+}
+
+[numthreads(THREAD_SIZE,1,1)]
+void ComputePressure(int3 id : SV_DispatchThreadID) {
+    int index = id.x;
+    Particle particle = R_particlesBuffer[index];
+    float pressure = PRESS_COEFF * max(0.0f, pow(particle.density / REST_DENSITY, 7) - 1);
+
+    R_particlesBuffer[index].pressure = pressure;
+    W_particlesBuffer[index].pressure = pressure;
+}
+
+[numthreads(THREAD_SIZE,1,1)]
+void ComputeAcceleration(int3 id : SV_DispatchThreadID) {
+    int index = id.x;
+    Particle particle = R_particlesBuffer[index];
+
+    float3 pressure_acc = float3(0.0f, 0.0f, 0.0f);
+    float3 viscocity_acc = float3(0.0f, 0.0f, 0.0f);
+
+    for (int i = 0; i < NUM_PARTICLES; i ++) {
+        Particle other = R_particlesBuffer[i];
+        float3 r = particle.position - other.position;
+        float r2 = dot(r, r);
+
+        if (r2 < SMOOTH_LEN * SMOOTH_LEN && index != i) {
+            float q = sqrt(r2) / SMOOTH_LEN;
+            float3 dir = normalize(r);
+            float dist = length(r);
+
+            // pressure acceleration
+            pressure_acc += - PARTICLE_MASS * KernelGradient(dist, dir) *
+            (particle.pressure / (particle.density * particle.density) + other.pressure / (other.density * other.density));
+
+            // viscocity acceleration
+            viscocity_acc += VISCO_COEFF * PARTICLE_MASS * KernelLaplacian(dist) * (other.velocity - particle.velocity) / other.density;
+        }
+    }
+
+    debugBuffer[index].viscosity = viscocity_acc;
+    debugBuffer[index].pressureGradient = pressure_acc;
+
+    R_particlesBuffer[index].acceleration = GRAVITY + pressure_acc + viscocity_acc;
+    W_particlesBuffer[index].acceleration = GRAVITY + pressure_acc + viscocity_acc;
+}
+
+[numthreads(THREAD_SIZE,1,1)]
+void ComputeTimeIntegration(int3 id : SV_DispatchThreadID) {
+    int index = id.x;
+    Particle particle = R_particlesBuffer[index];
+
+    float3 acceleration = particle.acceleration;
+    float3 velocity = particle.velocity;
+    float3 position = particle.position;
+
+    // Wall interaction
+    if (position.x < - BOX_SIZE) {
+        acceleration.x = - WALL_STIFF * (position.x + BOX_SIZE);
+    }else if (position.x > BOX_SIZE) {
+        acceleration.x = - WALL_STIFF * (position.x - BOX_SIZE);
+    }
+
+    if (position.y < - BOX_SIZE) {
+        acceleration.y = - WALL_STIFF * (position.y + BOX_SIZE);
+    }else if (position.y > BOX_SIZE) {
+        acceleration.y = - WALL_STIFF * (position.y - BOX_SIZE);
+    }
+
+    if (position.z < - BOX_SIZE) {
+        acceleration.z = - WALL_STIFF * (position.z + BOX_SIZE);
+    }else if (position.z > BOX_SIZE) {
+        acceleration.z = - WALL_STIFF * (position.z - BOX_SIZE);
+    }
+
+    velocity += acceleration * 0.001f;
+    position += velocity * 0.001f;
+
+    R_particlesBuffer[index].velocity = velocity;
+    R_particlesBuffer[index].position = position;
+    R_particlesBuffer[index].acceleration = acceleration;
+
+    W_particlesBuffer[index].velocity = velocity;
+    W_particlesBuffer[index].position = position;
+    W_particlesBuffer[index].acceleration = acceleration;
+}

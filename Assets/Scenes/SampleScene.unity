@@ -210,7 +210,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -443,7 +443,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &952494698
 Transform:
   m_ObjectHideFlags: 0
@@ -474,9 +474,9 @@ MonoBehaviour:
   particlePrefab: {fileID: 2382891277023060867, guid: 6f418bee6deb5f14d9708c0c460b7df7,
     type: 3}
   particles: []
-  numParticles: 500
   GRAVITY: -9.5
   BOX_SIZE: 2
+  numParticles: 500
   targetDensity: 10
   pressureCoefficient: 1
   viscosityCoefficient: 3
@@ -484,6 +484,64 @@ MonoBehaviour:
   particleRadius: 0.5
   iterations: 1
   startSize: 0.7
+--- !u!1 &1130489393
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1130489395}
+  - component: {fileID: 1130489394}
+  m_Layer: 0
+  m_Name: SPH_Compute_solver
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1130489394
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130489393}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa2edc7ae03222d4db028fd4ed9aec2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  particlePrefab: {fileID: 2382891277023060867, guid: 6f418bee6deb5f14d9708c0c460b7df7,
+    type: 3}
+  particles: []
+  GRAVITY: -4.81
+  BOX_SIZE: 6
+  _numParticles: 8192
+  targetDensity: 1.5
+  pressureCoefficient: 5
+  viscosityCoefficient: 0.5
+  WallStiffness: 3000
+  particleRadius: 0.5
+  iterations: 16
+  startSize: 0.8
+  particleMass: 0.04
+--- !u!4 &1130489395
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1130489393}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.0454125, y: 3.5937665, z: -5.9769917}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -492,3 +550,4 @@ SceneRoots:
   - {fileID: 410087041}
   - {fileID: 832575519}
   - {fileID: 952494698}
+  - {fileID: 1130489395}
