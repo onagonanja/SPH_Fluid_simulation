@@ -7,12 +7,11 @@ public class HashGridSearcher {
     float gridSize;
     HashSet<int>[][][] buket;
 
-    public HashGridSearcher() {
+    public HashGridSearcher(float gridSize) {
         GameObject sph = GameObject.Find("SPH_solver");
-        SPH_solver solver = sph.GetComponent<SPH_solver>();
+        SPH_Compute_solver solver = sph.GetComponent<SPH_Compute_solver>();
         gridBaseMin = new Vector3(-solver.BOX_SIZE, -solver.BOX_SIZE, -solver.BOX_SIZE) * 10;
         gridBaseMax = new Vector3(solver.BOX_SIZE, solver.BOX_SIZE, solver.BOX_SIZE) * 10;
-        gridSize = solver.particleRadius * 2f;
         int gridSizeX = Mathf.CeilToInt((gridBaseMax.x - gridBaseMin.x) / gridSize);
         int gridSizeY = Mathf.CeilToInt((gridBaseMax.y - gridBaseMin.y) / gridSize);
         int gridSizeZ = Mathf.CeilToInt((gridBaseMax.z - gridBaseMin.z) / gridSize);

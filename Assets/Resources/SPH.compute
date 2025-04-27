@@ -16,7 +16,6 @@ struct Particle {
 };
 
 RWStructuredBuffer<Particle> R_particlesBuffer;
-RWStructuredBuffer<Particle> W_particlesBuffer;
 
 struct DebugBuffer {
     float3 viscosity;
@@ -84,7 +83,6 @@ void ComputeDensity(int3 id : SV_DispatchThreadID) {
     }
 
     R_particlesBuffer[index].density = density;
-    W_particlesBuffer[index].density = density;
 }
 
 [numthreads(THREAD_SIZE,1,1)]
@@ -95,7 +93,6 @@ void ComputePressure(int3 id : SV_DispatchThreadID) {
     float pressure = PRESS_COEFF * max(0.0f, pow(particle.density / REST_DENSITY, 7) - 1);
 
     R_particlesBuffer[index].pressure = pressure;
-    W_particlesBuffer[index].pressure = pressure;
 }
 
 [numthreads(THREAD_SIZE,1,1)]
@@ -129,7 +126,6 @@ void ComputeAcceleration(int3 id : SV_DispatchThreadID) {
     debugBuffer[index].pressureGradient = pressure_acc;
 
     R_particlesBuffer[index].acceleration = GRAVITY + pressure_acc + viscocity_acc;
-    W_particlesBuffer[index].acceleration = GRAVITY + pressure_acc + viscocity_acc;
 }
 
 [numthreads(THREAD_SIZE,1,1)]
@@ -166,8 +162,4 @@ void ComputeTimeIntegration(int3 id : SV_DispatchThreadID) {
     R_particlesBuffer[index].velocity = velocity;
     R_particlesBuffer[index].position = position;
     R_particlesBuffer[index].acceleration = acceleration;
-
-    W_particlesBuffer[index].velocity = velocity;
-    W_particlesBuffer[index].position = position;
-    W_particlesBuffer[index].acceleration = acceleration;
 }

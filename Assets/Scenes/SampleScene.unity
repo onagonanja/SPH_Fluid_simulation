@@ -136,7 +136,7 @@ GameObject:
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
   m_Layer: 0
-  m_Name: w
+  m_Name: Camera
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -427,63 +427,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &952494697
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 952494698}
-  - component: {fileID: 952494699}
-  m_Layer: 0
-  m_Name: SPH_solver
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!4 &952494698
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 952494697}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.5761399, y: -1.4938021, z: -0.83135265}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &952494699
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 952494697}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2e39766ff27eb4840a4586f10042cf27, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  particlePrefab: {fileID: 2382891277023060867, guid: 6f418bee6deb5f14d9708c0c460b7df7,
-    type: 3}
-  particles: []
-  GRAVITY: -9.5
-  BOX_SIZE: 2
-  numParticles: 500
-  targetDensity: 10
-  pressureCoefficient: 1
-  viscosityCoefficient: 3
-  WallStiffness: 1000
-  particleRadius: 0.5
-  iterations: 1
-  startSize: 0.7
 --- !u!1 &1130489393
 GameObject:
   m_ObjectHideFlags: 0
@@ -515,10 +458,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   particlePrefab: {fileID: 2382891277023060867, guid: 6f418bee6deb5f14d9708c0c460b7df7,
     type: 3}
-  particles: []
   GRAVITY: -4.81
   BOX_SIZE: 6
-  _numParticles: 8192
   targetDensity: 1.5
   pressureCoefficient: 3
   viscosityCoefficient: 3
@@ -527,6 +468,7 @@ MonoBehaviour:
   iterations: 16
   startSize: 0.5
   particleMass: 0.04
+  _numParticles: 8192
 --- !u!4 &1130489395
 Transform:
   m_ObjectHideFlags: 0
@@ -549,5 +491,4 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
-  - {fileID: 952494698}
   - {fileID: 1130489395}

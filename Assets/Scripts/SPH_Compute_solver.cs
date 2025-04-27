@@ -9,25 +9,23 @@ using UnityEngine.UIElements;
 
 public class SPH_Compute_solver : MonoBehaviour {
     public GameObject particlePrefab;   // Prefab for the particles
-    [HideInInspector] public Particle[] particles;        // Array of particles in the fluid
-                                                          // Number of particles in the fluid
-    public float GRAVITY = -0.81f;
-    public float BOX_SIZE = 3.0f;
+    public float GRAVITY = -0.81f;      // Gravity force
+    public float BOX_SIZE = 3.0f;       // Size of the simulation box
 
-    private int numParticles;
+    private Particle[] particles;           // Array of particles in the fluid
+    private int numParticles;               // Number of particles in the fluid
     private ComputeShader sphComputeShader; // Compute shader for SPH calculations
     private ComputeBuffer R_particleBuffer; // Buffer for particle data in the compute shader
-    private ComputeBuffer W_particleBuffer; // Buffer for particle data in the compute shader
 
-    [SerializeField] NumParticlesEnum _numParticles = NumParticlesEnum.numParticles_1x; // Number of particles in the fluid
     [SerializeField] float targetDensity = 5.0f;            // Target density for the fluid
     [SerializeField] float pressureCoefficient = 0.57f;     // Coefficient for the pressure term
     [SerializeField] float viscosityCoefficient = 0.1f;     // Coefficient for the viscosity term
     [SerializeField] float WallStiffness = 100.0f;          // Stiffness for the wall penalty
-    [SerializeField] float particleRadius = 0.12f;   // Radius of the particles
+    [SerializeField] float particleRadius = 0.12f;          // Radius of the particles
     [SerializeField] int iterations = 4;                    // Number of iterations for the solver
     [SerializeField] float startSize = 0.8f;                // Number of iterations for the solver
     [SerializeField] float particleMass = 0.04f;            // Mass of the particles
+    [SerializeField] NumParticlesEnum _numParticles = NumParticlesEnum.numParticles_1x; // Number of particles in the fluid
 
     const int BASE_THREAD_SIZE = 1024;
 
@@ -56,7 +54,6 @@ public class SPH_Compute_solver : MonoBehaviour {
         numParticles = (int)_numParticles;
         particles = new Particle[numParticles];
         R_particleBuffer = new ComputeBuffer(numParticles, Marshal.SizeOf(typeof(ParticleBuffer)));
-        W_particleBuffer = new ComputeBuffer(numParticles, Marshal.SizeOf(typeof(ParticleBuffer)));
 
         ParticleBuffer[] particleBufferList = new ParticleBuffer[numParticles];
         debugBufferList = new ComputeBuffer(numParticles, Marshal.SizeOf(typeof(DebugBuffer)));
@@ -108,31 +105,27 @@ public class SPH_Compute_solver : MonoBehaviour {
         // Calculate density
         kernelId = sphComputeShader.FindKernel("ComputeDensity");
         sphComputeShader.SetBuffer(kernelId, "R_particlesBuffer", R_particleBuffer);
-        sphComputeShader.SetBuffer(kernelId, "W_particlesBuffer", W_particleBuffer);
         sphComputeShader.Dispatch(kernelId, num_threadgroup, 1, 1);
 
         // Calculate pressure
         kernelId = sphComputeShader.FindKernel("ComputePressure");
         sphComputeShader.SetBuffer(kernelId, "R_particlesBuffer", R_particleBuffer);
-        sphComputeShader.SetBuffer(kernelId, "W_particlesBuffer", W_particleBuffer);
         sphComputeShader.Dispatch(kernelId, num_threadgroup, 1, 1);
 
         // Calculate acceleration
         kernelId = sphComputeShader.FindKernel("ComputeAcceleration");
         sphComputeShader.SetBuffer(kernelId, "R_particlesBuffer", R_particleBuffer);
-        sphComputeShader.SetBuffer(kernelId, "W_particlesBuffer", W_particleBuffer);
         sphComputeShader.SetBuffer(kernelId, "debugBuffer", debugBufferList);
         sphComputeShader.Dispatch(kernelId, num_threadgroup, 1, 1);
 
         // Calculate time integration
         kernelId = sphComputeShader.FindKernel("ComputeTimeIntegration");
         sphComputeShader.SetBuffer(kernelId, "R_particlesBuffer", R_particleBuffer);
-        sphComputeShader.SetBuffer(kernelId, "W_particlesBuffer", W_particleBuffer);
         sphComputeShader.Dispatch(kernelId, num_threadgroup, 1, 1);
 
         // Copy data back to particles
         ParticleBuffer[] particleBufferList = new ParticleBuffer[numParticles];
-        W_particleBuffer.GetData(particleBufferList);
+        R_particleBuffer.GetData(particleBufferList);
 
         DebugBuffer[] debugBufferListArray = new DebugBuffer[numParticles];
         debugBufferList.GetData(debugBufferListArray);
@@ -150,10 +143,5 @@ public class SPH_Compute_solver : MonoBehaviour {
             // Debug.Log("Particle " + i + " Acceleration: " + particleBufferList[i].acceleration);
             // Debug.Log("Particle " + i + " Position: " + particleBufferList[i].position);
         }
-
-        // Swap buffers
-        ComputeBuffer temp = R_particleBuffer;
-        R_particleBuffer = W_particleBuffer;
-        W_particleBuffer = temp;
     }
 }
