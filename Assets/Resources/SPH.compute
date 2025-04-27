@@ -91,6 +91,7 @@ void ComputeDensity(int3 id : SV_DispatchThreadID) {
 void ComputePressure(int3 id : SV_DispatchThreadID) {
     int index = id.x;
     Particle particle = R_particlesBuffer[index];
+    // float pressure = PRESS_COEFF * (pow(particle.density / REST_DENSITY, 7) - 1);
     float pressure = PRESS_COEFF * max(0.0f, pow(particle.density / REST_DENSITY, 7) - 1);
 
     R_particlesBuffer[index].pressure = pressure;
@@ -150,7 +151,7 @@ void ComputeTimeIntegration(int3 id : SV_DispatchThreadID) {
     if (position.y < - BOX_SIZE) {
         acceleration.y = - WALL_STIFF * (position.y + BOX_SIZE);
     }else if (position.y > BOX_SIZE) {
-        acceleration.y = - WALL_STIFF * (position.y - BOX_SIZE);
+        // acceleration.y = - WALL_STIFF * (position.y - BOX_SIZE);
     }
 
     if (position.z < - BOX_SIZE) {
@@ -159,8 +160,8 @@ void ComputeTimeIntegration(int3 id : SV_DispatchThreadID) {
         acceleration.z = - WALL_STIFF * (position.z - BOX_SIZE);
     }
 
-    velocity += acceleration * 0.001f;
-    position += velocity * 0.001f;
+    velocity += acceleration * 0.003f;
+    position += velocity * 0.003f;
 
     R_particlesBuffer[index].velocity = velocity;
     R_particlesBuffer[index].position = position;

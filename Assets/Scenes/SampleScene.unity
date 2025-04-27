@@ -520,12 +520,12 @@ MonoBehaviour:
   BOX_SIZE: 6
   _numParticles: 8192
   targetDensity: 1.5
-  pressureCoefficient: 5
-  viscosityCoefficient: 0.5
+  pressureCoefficient: 3
+  viscosityCoefficient: 3
   WallStiffness: 3000
   particleRadius: 0.5
   iterations: 16
-  startSize: 0.8
+  startSize: 0.5
   particleMass: 0.04
 --- !u!4 &1130489395
 Transform:

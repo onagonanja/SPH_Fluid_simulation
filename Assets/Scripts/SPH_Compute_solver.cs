@@ -24,7 +24,7 @@ public class SPH_Compute_solver : MonoBehaviour {
     [SerializeField] float pressureCoefficient = 0.57f;     // Coefficient for the pressure term
     [SerializeField] float viscosityCoefficient = 0.1f;     // Coefficient for the viscosity term
     [SerializeField] float WallStiffness = 100.0f;          // Stiffness for the wall penalty
-    [SerializeField] public float particleRadius = 0.12f;   // Radius of the particles
+    [SerializeField] float particleRadius = 0.12f;   // Radius of the particles
     [SerializeField] int iterations = 4;                    // Number of iterations for the solver
     [SerializeField] float startSize = 0.8f;                // Number of iterations for the solver
     [SerializeField] float particleMass = 0.04f;            // Mass of the particles
@@ -66,7 +66,7 @@ public class SPH_Compute_solver : MonoBehaviour {
             particles[i] = particleObject.GetComponent<Particle>();
             particles[i].transform.position = new Vector3(
                 UnityEngine.Random.Range(-BOX_SIZE * startSize, BOX_SIZE * startSize),
-                UnityEngine.Random.Range(-BOX_SIZE * startSize, BOX_SIZE * startSize),
+                UnityEngine.Random.Range(-BOX_SIZE * startSize + BOX_SIZE * 2, BOX_SIZE * startSize + BOX_SIZE * 2),
                 UnityEngine.Random.Range(-BOX_SIZE * startSize, BOX_SIZE * startSize)
             );
             ParticleBuffer particleBuffer = new ParticleBuffer {
